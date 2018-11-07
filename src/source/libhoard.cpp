@@ -5,19 +5,19 @@
   www.hoard.org
 
   Author: Emery Berger, http://www.emeryberger.org
- 
+
   Copyright (c) 1998-2018 Emery Berger
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -39,11 +39,13 @@
 
 #include "heaplayers.h"
 
+#include "zeusrdma.h"
+
 // The undef below ensures that any pthread_* calls get strong
 // linkage.  Otherwise, our versions here won't replace them.  It is
 // IMPERATIVE that this line appear before any files get included.
 
-#undef __GXX_WEAK__ 
+#undef __GXX_WEAK__
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -70,16 +72,16 @@ volatile bool anyThreadCreated = false;
 #endif
 
 namespace Hoard {
-  
+
   // HOARD_MMAP_PROTECTION_MASK defines the protection flags used for
   // freshly-allocated memory. The default case is that heap memory is
   // NOT executable, thus preventing the class of attacks that inject
   // executable code on the heap.
-  // 
+  //
   // While this is not recommended, you can define HL_EXECUTABLE_HEAP as
   // 1 in heaplayers/heaplayers.h if you really need to (i.e., you're
   // doing dynamic code generation into malloc'd space).
-  
+
 #if HL_EXECUTABLE_HEAP
 #define HOARD_MMAP_PROTECTION_MASK (PROT_READ | PROT_WRITE | PROT_EXEC)
 #else
@@ -164,3 +166,7 @@ extern "C" {
   }
 
 } // namespace Hoard
+
+struct ibv_mr * Zeus::RDMA::Hoard::getRdmaMr(void *ptr, ibv_pd *pd) {
+  return getCustomHeap()->getRdmaMr(ptr, pd);
+}

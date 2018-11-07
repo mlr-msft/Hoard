@@ -6,19 +6,19 @@
   www.hoard.org
 
   Author: Emery Berger, http://www.emeryberger.com
- 
+
   Copyright (c) 1998-2018 Emery Berger
-  
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -37,6 +37,8 @@
 #endif
 
 #include "heaplayers.h"
+
+#include <rdma/rdma_verbs.h>
 
 #include <cstdlib>
 
@@ -60,7 +62,7 @@ namespace Hoard {
 	    int SuperblockSize,
 	    typename HeapType>
   class HoardSuperblockHeader;
-  
+
   template <class LockType,
 	    int SuperblockSize,
 	    typename HeapType>
@@ -72,7 +74,7 @@ namespace Hoard {
   public:
 
     typedef HoardSuperblock<LockType, SuperblockSize, HeapType, HoardSuperblockHeader> BlockType;
-    
+
     HoardSuperblockHeaderHelper (size_t sz, size_t bufferSize, char * start)
       : _magicNumber (MAGIC_NUMBER ^ (size_t) this),
 	_objectSize (sz),
@@ -84,7 +86,8 @@ namespace Hoard {
 	_reapableObjects (_totalObjects),
 	_objectsFree (_totalObjects),
 	_start (start),
-	_position (start)
+	_position (start),
+	_rdmaMr (nullptr)
     {
       assert ((HL::align<Alignment>((size_t) start) == (size_t) start));
       assert (_objectSize >= Alignment);
@@ -93,6 +96,10 @@ namespace Hoard {
 
     virtual ~HoardSuperblockHeaderHelper() {
       clear();
+      if (_rdmaMr != nullptr)
+      {
+        ibv_dereg_mr(_rdmaMr);
+      }
     }
 
     inline void * malloc() {
@@ -210,6 +217,24 @@ namespace Hoard {
       _theLock.unlock();
     }
 
+    inline ibv_mr * getRdmaMr(struct ibv_pd *pd)
+    {
+      assert (isValid());
+      if (_rdmaMr == nullptr)
+      {
+        assert(pd != nullptr);
+        //fprintf(stderr, "Registering RDMA buffer on demand...\n");
+        _rdmaMr = ibv_reg_mr(pd,
+            (void *)_start,
+            _totalObjects * _objectSize,
+            IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
+        //fprintf(stderr, "Registered.\n");
+      }
+
+      assert(_rdmaMr != nullptr);
+      return _rdmaMr;
+    }
+
   private:
 
     MALLOC_FUNCTION INLINE void * reapAlloc() {
@@ -264,7 +289,7 @@ namespace Hoard {
 
     /// The succeeding superblock in a linked list.
     BlockType* _next;
-    
+
     /// The number of objects available to be 'reap'ed.
     unsigned int _reapableObjects;
 
@@ -276,6 +301,8 @@ namespace Hoard {
 
     /// The cursor into the buffer following the header.
     char * _position;
+
+    struct ibv_mr *_rdmaMr;
 
     /// The list of freed objects.
     FreeSLList _freeList;
@@ -290,7 +317,7 @@ namespace Hoard {
     public HoardSuperblockHeaderHelper<LockType, SuperblockSize, HeapType> {
   public:
 
-    
+
     HoardSuperblockHeader (size_t sz, size_t bufferSize)
       : HoardSuperblockHeaderHelper<LockType,SuperblockSize,HeapType> (sz, bufferSize, (char *) (this + 1))
     {

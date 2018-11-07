@@ -9,3 +9,6 @@
 a.out
 *.exp
 *.lib
+
+/src/Heap-Layers
+/src/libhoard.so

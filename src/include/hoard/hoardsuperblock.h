@@ -6,19 +6,19 @@
   www.hoard.org
 
   Author: Emery Berger, http://www.emeryberger.com
- 
+
   Copyright (c) 1998-2018 Emery Berger
-  
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -32,6 +32,8 @@
 #include <cstdlib>
 
 #include "heaplayers.h"
+
+#include "zeusrdma.h"
 
 namespace Hoard {
 
@@ -51,7 +53,7 @@ namespace Hoard {
       assert (this == (HoardSuperblock *)
 	      (((size_t) this) & ~((size_t) SuperblockSize-1)));
     }
-    
+
     /// @brief Find the start of the superblock by bitmasking.
     /// @note  All superblocks <em>must</em> be naturally aligned, and powers of two.
     static inline HoardSuperblock * getSuperblock (void * ptr) {
@@ -94,24 +96,24 @@ namespace Hoard {
 	// Invalid free.
       }
     }
-    
+
     void clear() {
       if (_header.isValid())
 	_header.clear();
     }
-    
+
     // ----- below here are non-conventional heap methods ----- //
-    
+
     INLINE bool isValidSuperblock() const {
       auto b = _header.isValid();
       return b;
     }
-    
+
     INLINE unsigned int getTotalObjects() const {
       assert (_header.isValid());
       return _header.getTotalObjects();
     }
-    
+
     /// Return the number of free objects in this superblock.
     INLINE unsigned int getObjectsFree() const {
       assert (_header.isValid());
@@ -119,17 +121,17 @@ namespace Hoard {
       assert (_header.getObjectsFree() <= _header.getTotalObjects());
       return _header.getObjectsFree();
     }
-    
+
     inline void lock() {
       assert (_header.isValid());
       _header.lock();
     }
-    
+
     inline void unlock() {
       assert (_header.isValid());
       _header.unlock();
     }
-    
+
     inline HeapType * getOwner() const {
       assert (_header.isValid());
       return _header.getOwner();
@@ -140,7 +142,7 @@ namespace Hoard {
       assert (o != nullptr);
       _header.setOwner (o);
     }
-    
+
     inline HoardSuperblock * getNext() const {
       assert (_header.isValid());
       return _header.getNext();
@@ -150,26 +152,26 @@ namespace Hoard {
       assert (_header.isValid());
       return _header.getPrev();
     }
-    
+
     inline void setNext (HoardSuperblock * f) {
       assert (_header.isValid());
       assert (f != this);
       _header.setNext (f);
     }
-    
+
     inline void setPrev (HoardSuperblock * f) {
       assert (_header.isValid());
       assert (f != this);
       _header.setPrev (f);
     }
-    
+
     INLINE bool inRange (void * ptr) const {
       // Returns true iff the pointer is valid.
       auto ptrValue = (size_t) ptr;
       return ((ptrValue >= (size_t) _buf) &&
 	      (ptrValue < (size_t) &_buf[BufferSize]));
     }
-    
+
     INLINE void * normalize (void * ptr) const {
       auto * ptr2 = _header.normalize (ptr);
       assert (inRange (ptr));
@@ -179,20 +181,26 @@ namespace Hoard {
 
     typedef Header_<LockType, SuperblockSize, HeapType> Header;
 
+    inline ibv_mr * getRdmaMr(ibv_pd *pd)
+    {
+      assert (_header.isValid());
+      return _header.getRdmaMr(pd);
+    }
+
   private:
-    
-    
+
+
     // Disable copying and assignment.
-    
+
     HoardSuperblock (const HoardSuperblock&);
     HoardSuperblock& operator=(const HoardSuperblock&);
-    
+
     enum { BufferSize = SuperblockSize - sizeof(Header) };
-    
+
     /// The metadata.
     Header _header;
 
-    
+
     /// The actual buffer. MUST immediately follow the header!
     char _buf[BufferSize];
   };

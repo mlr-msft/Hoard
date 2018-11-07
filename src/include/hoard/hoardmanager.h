@@ -6,19 +6,19 @@
   www.hoard.org
 
   Author: Emery Berger, http://www.emeryberger.com
- 
+
   Copyright (c) 1998-2018 Emery Berger
-  
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -42,6 +42,8 @@
 
 
 #include "heaplayers.h"
+
+#include <rdma/rdma_verbs.h>
 
 using namespace HL;
 
@@ -141,7 +143,7 @@ namespace Hoard {
       auto * s = _otherBins(binIndex).get();
       if (s) {
 	assert (s->isValidSuperblock());
-      
+
 	// Update the statistics, removing objects in use and allocated for s.
 	decStatsSuperblock (s, binIndex);
 	s->setOwner (dest);
@@ -156,7 +158,7 @@ namespace Hoard {
 
       // Get the corresponding superblock.
       SuperblockType * s = SuperHeap::getSuperblock (ptr);
- 
+
       assert (s->getOwner() == this);
 
       // Find out which bin it belongs to.
@@ -195,6 +197,13 @@ namespace Hoard {
       _theLock.unlock();
     }
 
+    INLINE ibv_mr* getRdmaMr(void *ptr, ibv_pd *pd)
+    {
+        SuperblockType *s = SuperHeap::getSuperblock(ptr);
+        assert (s->getOwner() == this);
+        return s->getRdmaMr(pd);
+    }
+
   private:
 
     typedef BaseHoardManager<SuperblockType_> SuperHeap;
@@ -213,7 +222,7 @@ namespace Hoard {
     size_t _cachedSize;
     size_t _cachedRealSize;
     int    _cachedSizeClass;
-    
+
     inline int isValid() const {
       return (_magic == MAGIC_NUMBER);
     }
@@ -232,11 +241,11 @@ namespace Hoard {
       // We've crossed the threshold.
       // Remove a superblock and give it to the 'parent heap.'
       Check<HoardManager, sanityCheck> check (this);
-    
+
       //	printf ("HoardManager: this = %x, getting a superblock\n", this);
-    
+
       SuperblockType * sb = _otherBins(binIndex).get ();
-    
+
       // We should always get one.
       assert (sb);
       if (sb) {

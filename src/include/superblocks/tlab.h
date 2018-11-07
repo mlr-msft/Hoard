@@ -6,19 +6,19 @@
   www.hoard.org
 
   Author: Emery Berger, http://www.cs.umass.edu/~emery
- 
+
   Copyright (c) 1998-2012 Emery Berger
-  
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -45,13 +45,13 @@
 namespace Hoard {
 
   template <int NumBins,
-	    int (*getSizeClass) (size_t),
-	    size_t (*getClassSize) (int),
-	    size_t LargestObject,
-	    size_t LocalHeapThreshold,
-	    class SuperblockType,
-	    unsigned int SuperblockSize,
-	    class ParentHeap>
+      int (*getSizeClass) (size_t),
+      size_t (*getClassSize) (int),
+      size_t LargestObject,
+      size_t LocalHeapThreshold,
+      class SuperblockType,
+      unsigned int SuperblockSize,
+      class ParentHeap>
 
   class ThreadLocalAllocationBuffer {
 
@@ -63,12 +63,12 @@ namespace Hoard {
 
     ThreadLocalAllocationBuffer (ParentHeap * parent)
       : _parentHeap (parent),
-      	_localHeapBytes (0)
+        _localHeapBytes (0)
     {
       static_assert(gcd<Alignment, DesiredAlignment>::value == DesiredAlignment,
-		    "Alignment mismatch.");
+        "Alignment mismatch.");
       static_assert((Alignment >= 2 * sizeof(size_t)),
-		    "Alignment must be enough to hold two pointers.");
+        "Alignment must be enough to hold two pointers.");
     }
 
     ~ThreadLocalAllocationBuffer() {
@@ -82,21 +82,21 @@ namespace Hoard {
     inline void * malloc (size_t sz) {
 #if 0
       if (sz < Alignment) {
-      	sz = Alignment;
+        sz = Alignment;
       }
 #endif
       // Get memory from the local heap,
       // and deduct that amount from the local heap bytes counter.
       if (sz <= LargestObject) {
-      	auto c = getSizeClass (sz);
-      	auto * ptr = _localHeap(c).get();
-      	if (ptr) {
-      	  assert (_localHeapBytes >= sz);
-      	  _localHeapBytes -= getClassSize (c); // sz; 
-      	  assert (getSize(ptr) >= sz);
-      	  assert ((size_t) ptr % Alignment == 0);
-      	  return ptr;
-      	}
+        auto c = getSizeClass (sz);
+        auto * ptr = _localHeap(c).get();
+        if (ptr) {
+          assert (_localHeapBytes >= sz);
+          _localHeapBytes -= getClassSize (c); // sz;
+          assert (getSize(ptr) >= sz);
+          assert ((size_t) ptr % Alignment == 0);
+          return ptr;
+        }
       }
 
       // No more local memory (for this size, at least).
@@ -113,26 +113,26 @@ namespace Hoard {
 
       if (s->isValidSuperblock()) {
 
-      	ptr = s->normalize (ptr);
-      	auto sz = s->getObjectSize ();
+        ptr = s->normalize (ptr);
+        auto sz = s->getObjectSize ();
 
-      	if ((sz <= LargestObject) && (sz + _localHeapBytes <= LocalHeapThreshold)) {
-      	  // Free small objects locally, unless we are out of space.
+        if ((sz <= LargestObject) && (sz + _localHeapBytes <= LocalHeapThreshold)) {
+          // Free small objects locally, unless we are out of space.
 
-      	  assert (getSize(ptr) >= sizeof(HL::SLList::Entry *));
-      	  auto c = getSizeClass (sz);
+          assert (getSize(ptr) >= sizeof(HL::SLList::Entry *));
+          auto c = getSizeClass (sz);
 
-      	  _localHeap(c).insert ((HL::SLList::Entry *) ptr);
-      	  _localHeapBytes += getClassSize(c); // sz;
-      	  
-      	} else {
+          _localHeap(c).insert ((HL::SLList::Entry *) ptr);
+          _localHeapBytes += getClassSize(c); // sz;
 
-      	  // Free it to the parent.
-      	  _parentHeap->free (ptr);
-      	}
+        } else {
+
+          // Free it to the parent.
+          _parentHeap->free (ptr);
+        }
 
       } else {
-      	// Illegal pointer.
+        // Illegal pointer.
       }
     }
 
@@ -140,13 +140,26 @@ namespace Hoard {
       // Free every object to the 'parent' heap.
       int i = NumBins - 1;
       while ((_localHeapBytes > 0) && (i >= 0)) {
-      	auto sz = getClassSize (i);
-      	while (!_localHeap(i).isEmpty()) {
-      	  auto * e = _localHeap(i).get();
-      	  _parentHeap->free (e);
-      	  _localHeapBytes -= sz;
-      	}
-      	i--;
+        auto sz = getClassSize (i);
+        while (!_localHeap(i).isEmpty()) {
+          auto * e = _localHeap(i).get();
+          _parentHeap->free (e);
+          _localHeapBytes -= sz;
+        }
+        i--;
+      }
+    }
+
+    inline struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd) {
+      auto *s = getSuperblock(ptr);
+
+      if (s->isValidSuperblock())
+      {
+        return s->getRdmaMr(pd);
+      }
+      else
+      {
+        return nullptr;// illegal pointer
       }
     }
 
