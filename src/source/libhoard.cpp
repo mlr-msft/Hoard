@@ -170,3 +170,11 @@ extern "C" {
 struct ibv_mr * Zeus::RDMA::Hoard::getRdmaMr(void *ptr, ibv_pd *pd) {
   return getCustomHeap()->getRdmaMr(ptr, pd);
 }
+
+void Zeus::RDMA::Hoard::pin(void *ptr) {
+  getCustomHeap()->pin(ptr);
+}
+
+void Zeus::RDMA::Hoard::unpin(void *ptr) {
+  getCustomHeap()->unpin(ptr);
+}

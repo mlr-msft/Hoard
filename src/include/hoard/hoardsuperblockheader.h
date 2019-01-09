@@ -87,7 +87,8 @@ namespace Hoard {
 	_objectsFree (_totalObjects),
 	_start (start),
 	_position (start),
-	_rdmaMr (nullptr)
+	_rdmaMr (nullptr),
+  _refCnt (0)
     {
       assert ((HL::align<Alignment>((size_t) start) == (size_t) start));
       assert (_objectSize >= Alignment);
@@ -107,12 +108,13 @@ namespace Hoard {
       void * ptr = reapAlloc();
       assert ((ptr == nullptr) || ((size_t) ptr % Alignment == 0));
       if (!ptr) {
-	ptr = freeListAlloc();
-	assert ((ptr == nullptr) || ((size_t) ptr % Alignment == 0));
+        ptr = freeListAlloc();
+        assert ((ptr == nullptr) || ((size_t) ptr % Alignment == 0));
       }
       if (ptr != nullptr) {
-	assert (getSize(ptr) >= _objectSize);
-	assert ((size_t) ptr % Alignment == 0);
+        assert (getSize(ptr) >= _objectSize);
+        assert ((size_t) ptr % Alignment == 0);
+        pin();
       }
       return ptr;
     }
@@ -122,9 +124,7 @@ namespace Hoard {
       assert (isValid());
       _freeList.insert (reinterpret_cast<FreeSLList::Entry *>(ptr));
       _objectsFree++;
-      if (_objectsFree == _totalObjects) {
-	clear();
-      }
+      unpin();
     }
 
     void clear() {
@@ -235,6 +235,22 @@ namespace Hoard {
       return _rdmaMr;
     }
 
+    inline void pin() {
+      assert (isValid());
+      __sync_fetch_and_add(&_refCnt, 1);
+    }
+
+    inline void unpin() {
+      assert (isValid());
+      if (1 == __sync_fetch_and_sub(&_refCnt, 1)) {
+        if (_objectsFree != _totalObjects) {
+          fprintf(stderr, "INTERNAL ERROR");
+          abort();
+        }
+        clear();
+      }
+    }
+
   private:
 
     MALLOC_FUNCTION INLINE void * reapAlloc() {
@@ -303,6 +319,8 @@ namespace Hoard {
     char * _position;
 
     struct ibv_mr *_rdmaMr;
+
+    uint32_t _refCnt;
 
     /// The list of freed objects.
     FreeSLList _freeList;

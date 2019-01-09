@@ -40,6 +40,8 @@ namespace Zeus
     namespace Hoard
     {
       struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd);
+      void pin(void *ptr);
+      void unpin(void *ptr);
     }
   }
 } // namespace Hoard

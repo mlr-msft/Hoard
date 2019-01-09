@@ -187,6 +187,18 @@ namespace Hoard {
       return _header.getRdmaMr(pd);
     }
 
+    inline void pin()
+    {
+      assert (_header.isValid());
+      _header.pin();
+    }
+
+    inline void unpin()
+    {
+      assert (_header.isValid());
+      _header.unpin();
+    }
+
   private:
 
 

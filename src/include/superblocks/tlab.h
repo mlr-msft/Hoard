@@ -163,6 +163,34 @@ namespace Hoard {
       }
     }
 
+    inline void pin(void *ptr) {
+      auto * const s = getSuperblock(ptr);
+
+      if (s->isValidSuperblock())
+      {
+        s->pin();
+      }
+      else
+      {
+        fprintf(stderr, "INTERNAL ERROR");
+        abort();
+      }
+    }
+
+    inline void unpin(void *ptr) {
+      auto * const s = getSuperblock(ptr);
+
+      if (s->isValidSuperblock())
+      {
+        s->unpin();
+      }
+      else
+      {
+        fprintf(stderr, "INTERNAL ERROR");
+        abort();
+      }
+    }
+
     static inline SuperblockType * getSuperblock (void * ptr) {
       return SuperblockType::getSuperblock (ptr);
     }
