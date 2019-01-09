@@ -3,7 +3,7 @@
 
 # todo: why does this link against `libverbs` and not `libibverbs` like
 # everything else?
-CPPFLAGS = -std=c++14 -O3 -DNDEBUG -ffast-math -fno-builtin-malloc -Wall -Wextra -Wshadow -Wconversion -Wuninitialized -lrdmacm -libverbs
+CPPFLAGS = -std=c++14 -O3 -DNDEBUG -ffast-math -fno-builtin-malloc -Wall -Wextra -Wshadow -Wconversion -Wuninitialized -lrdmacm -libverbs $(CPPFLAGS_EXTRA)
 #CPPFLAGS = -std=c++14 -g -O0 -ffast-math -fno-builtin-malloc -Wall -Wextra -Wshadow -Wconversion -Wuninitialized
 CXX = clang++
 
