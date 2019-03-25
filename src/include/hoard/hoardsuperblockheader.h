@@ -234,21 +234,21 @@ namespace Hoard {
 
     inline void pin(void *ptr) {
       uint8_t * const refCount = getRefCount(ptr);
-      if (0xff == *pinCount) {
+      if (0xff == *refCount) {
         fprintf(stderr, "REFERENCE COUNT OVERFLOW");
       }
 
-      ++(*pinCount);
+      ++(*refCount);
     }
 
     inline void unpin(void *ptr) {
       uint8_t * const refCount = getRefCount(ptr);
-      if (0 == *pinCount) {
+      if (0 == *refCount) {
         fprintf(stderr, "REFERENCE COUNT UNDERFLOW");
       }
 
-      --(*pinCount);
-      if (0 == *pinCount) {
+      --(*refCount);
+      if (0 == *refCount) {
         _freeList.insert (reinterpret_cast<FreeSLList::Entry *>(ptr));
         _objectsFree++;
         if (_objectsFree == _totalObjects) {
@@ -289,9 +289,12 @@ namespace Hoard {
     inline uint8_t * getRefCount(void *ptr) {
       assert ((size_t) ptr % Alignment == 0);
       assert (isValid());
+      assert (ptr >= _start);
 
-      size_t idx = (ptr - start) / _objectSize;
-      return reinterpret_cast<uint8_t *>(_start) + _bufferSize - 1 - idx;
+      char * const start = const_cast<char *>(_start);
+      size_t offset = static_cast<size_t>(reinterpret_cast<char *>(ptr) - start);
+      size_t idx = offset / _objectSize;
+      return reinterpret_cast<uint8_t *>(start) + _bufferSize - 1 - idx;
     }
 
     enum { MAGIC_NUMBER = 0xcafed00d };
@@ -334,7 +337,7 @@ namespace Hoard {
 
     struct ibv_mr *_rdmaMr;
 
-    uint32_t _bufferSize;
+    size_t _bufferSize;
 
     /// The list of freed objects.
     FreeSLList _freeList;
