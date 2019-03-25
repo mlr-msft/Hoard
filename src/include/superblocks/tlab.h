@@ -168,11 +168,11 @@ namespace Hoard {
 
       if (s->isValidSuperblock())
       {
-        s->pin();
+        s->pin(ptr);
       }
       else
       {
-        fprintf(stderr, "INTERNAL ERROR");
+        fprintf(stderr, "SUPERBLOCK NOT FOUND");
         abort();
       }
     }
@@ -182,11 +182,11 @@ namespace Hoard {
 
       if (s->isValidSuperblock())
       {
-        s->unpin();
+        s->unpin(ptr);
       }
       else
       {
-        fprintf(stderr, "INTERNAL ERROR");
+        fprintf(stderr, "SUPERBLOCK NOT FOUND");
         abort();
       }
     }

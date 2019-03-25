@@ -187,16 +187,18 @@ namespace Hoard {
       return _header.getRdmaMr(pd);
     }
 
-    inline void pin()
+    inline void pin(void *ptr)
     {
       assert (_header.isValid());
-      _header.pin();
+      assert (inRange(ptr));
+      _header.pin(ptr);
     }
 
-    inline void unpin()
+    inline void unpin(void *ptr)
     {
       assert (_header.isValid());
-      _header.unpin();
+      assert (inRange(ptr));
+      _header.unpin(ptr);
     }
 
   private:

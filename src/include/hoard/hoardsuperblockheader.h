@@ -79,7 +79,7 @@ namespace Hoard {
       : _magicNumber (MAGIC_NUMBER ^ (size_t) this),
 	_objectSize (sz),
 	_objectSizeIsPowerOfTwo (!(sz & (sz - 1)) && sz),
-	_totalObjects ((unsigned int) (bufferSize / sz)),
+	_totalObjects ((unsigned int) (bufferSize / sz - bufferSize / sz * sz)),
 	_owner (nullptr),
 	_prev (nullptr),
 	_next (nullptr),
@@ -88,7 +88,7 @@ namespace Hoard {
 	_start (start),
 	_position (start),
 	_rdmaMr (nullptr),
-  _refCnt (0)
+  _bufferSize (bufferSize)
     {
       assert ((HL::align<Alignment>((size_t) start) == (size_t) start));
       assert (_objectSize >= Alignment);
@@ -114,17 +114,14 @@ namespace Hoard {
       if (ptr != nullptr) {
         assert (getSize(ptr) >= _objectSize);
         assert ((size_t) ptr % Alignment == 0);
-        pin();
+        uint8_t * const refCount = getRefCount(ptr);
+        *refCount = 1;
       }
       return ptr;
     }
 
     inline void free (void * ptr) {
-      assert ((size_t) ptr % Alignment == 0);
-      assert (isValid());
-      _freeList.insert (reinterpret_cast<FreeSLList::Entry *>(ptr));
-      _objectsFree++;
-      unpin();
+      unpin(ptr);
     }
 
     void clear() {
@@ -235,19 +232,28 @@ namespace Hoard {
       return _rdmaMr;
     }
 
-    inline void pin() {
-      assert (isValid());
-      __sync_fetch_and_add(&_refCnt, 1);
+    inline void pin(void *ptr) {
+      uint8_t * const refCount = getRefCount(ptr);
+      if (0xff == *pinCount) {
+        fprintf(stderr, "REFERENCE COUNT OVERFLOW");
+      }
+
+      ++(*pinCount);
     }
 
-    inline void unpin() {
-      assert (isValid());
-      if (1 == __sync_fetch_and_sub(&_refCnt, 1)) {
-        if (_objectsFree != _totalObjects) {
-          fprintf(stderr, "INTERNAL ERROR");
-          abort();
+    inline void unpin(void *ptr) {
+      uint8_t * const refCount = getRefCount(ptr);
+      if (0 == *pinCount) {
+        fprintf(stderr, "REFERENCE COUNT UNDERFLOW");
+      }
+
+      --(*pinCount);
+      if (0 == *pinCount) {
+        _freeList.insert (reinterpret_cast<FreeSLList::Entry *>(ptr));
+        _objectsFree++;
+        if (_objectsFree == _totalObjects) {
+          clear();
         }
-        clear();
       }
     }
 
@@ -278,6 +284,14 @@ namespace Hoard {
 	_objectsFree--;
       }
       return ptr;
+    }
+
+    inline uint8_t * getRefCount(void *ptr) {
+      assert ((size_t) ptr % Alignment == 0);
+      assert (isValid());
+
+      size_t idx = (ptr - start) / _objectSize;
+      return reinterpret_cast<uint8_t *>(_start) + _bufferSize - 1 - idx;
     }
 
     enum { MAGIC_NUMBER = 0xcafed00d };
@@ -320,7 +334,7 @@ namespace Hoard {
 
     struct ibv_mr *_rdmaMr;
 
-    uint32_t _refCnt;
+    uint32_t _bufferSize;
 
     /// The list of freed objects.
     FreeSLList _freeList;
