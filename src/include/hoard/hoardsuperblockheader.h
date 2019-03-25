@@ -93,6 +93,7 @@ namespace Hoard {
       assert ((HL::align<Alignment>((size_t) start) == (size_t) start));
       assert (_objectSize >= Alignment);
       assert ((_totalObjects == 1) || (_objectSize % Alignment == 0));
+      assert (_totalObjects > 0);
     }
 
     virtual ~HoardSuperblockHeaderHelper() {
@@ -236,6 +237,7 @@ namespace Hoard {
       uint8_t * const refCount = getRefCount(ptr);
       if (0xff == *refCount) {
         fprintf(stderr, "REFERENCE COUNT OVERFLOW");
+        abort();
       }
 
       ++(*refCount);
@@ -243,11 +245,11 @@ namespace Hoard {
 
     inline void unpin(void *ptr) {
       uint8_t * const refCount = getRefCount(ptr);
-      if (0 == *refCount) {
-        fprintf(stderr, "REFERENCE COUNT UNDERFLOW");
+      // we attempt to preserve the behavior of double frees in this implementation.
+      if (0 < *refCount) {
+        --(*refCount);
       }
 
-      --(*refCount);
       if (0 == *refCount) {
         _freeList.insert (reinterpret_cast<FreeSLList::Entry *>(ptr));
         _objectsFree++;
