@@ -6,7 +6,7 @@
 
   Author: Emery Berger, http://www.emeryberger.org
  
-  Copyright (c) 1998-2018 Emery Berger
+  Copyright (c) 1998-2019 Emery Berger
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ extern "C" {
       if (!initialized) {
 	initialized = true;
 #if !defined(_WIN32)
-	fprintf(stderr, versionMessage);
+	/* fprintf(stderr, versionMessage); */
 #endif
       }
     }
