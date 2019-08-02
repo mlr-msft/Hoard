@@ -33,7 +33,8 @@
 
 #include "heaplayers.h"
 
-#include "zeusrdma.h"
+//PIALIC
+#include "winrdma.h"
 
 namespace Hoard {
 
@@ -181,10 +182,12 @@ namespace Hoard {
 
     typedef Header_<LockType, SuperblockSize, HeapType> Header;
 
-    inline ibv_mr * getRdmaMr(ibv_pd *pd)
+	//PIALIC:
+    //inline ibv_mr * getRdmaMr(ibv_pd *pd)
+	inline struct NetworkDirect::ndspi_mr * getRdmaMr()
     {
       assert (_header.isValid());
-      return _header.getRdmaMr(pd);
+      return _header.getRdmaMr();
     }
 
   private:

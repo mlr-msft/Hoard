@@ -43,7 +43,10 @@
 
 #include "heaplayers.h"
 
-#include <rdma/rdma_verbs.h>
+//PIALIC
+// #include <rdma/rdma_verbs.h>
+#include "ndspi.h"
+#include <ndtestutil.h>
 
 using namespace HL;
 
@@ -197,11 +200,14 @@ namespace Hoard {
       _theLock.unlock();
     }
 
-    INLINE ibv_mr* getRdmaMr(void *ptr, ibv_pd *pd)
+//PIALIC: changing ibv_pd to void*
+    INLINE struct ndspi_mr* getRdmaMr(void *ptr, void *pd)
     {
         SuperblockType *s = SuperHeap::getSuperblock(ptr);
         assert (s->getOwner() == this);
-        return s->getRdmaMr(pd);
+		//PIALIC
+        //return s->getRdmaMr(pd);
+		return s->getRdmaMr();
     }
 
   private:

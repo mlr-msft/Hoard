@@ -30,6 +30,12 @@
  * @author Emery Berger <http://www.cs.umass.edu/~emery>
  */
 
+#pragma warning(push)
+#pragma warning(disable:4267)
+#pragma warning(disable:4290)
+
+#include "winrdma.h"
+
 #include <cstddef>
 #include <new>
 
@@ -39,7 +45,8 @@
 
 #include "heaplayers.h"
 
-#include "zeusrdma.h"
+//PIALI
+//#include "zeusrdma.h"
 
 // The undef below ensures that any pthread_* calls get strong
 // linkage.  Otherwise, our versions here won't replace them.  It is
@@ -167,6 +174,14 @@ extern "C" {
 
 } // namespace Hoard
 
+//PIALIC
+/*
 struct ibv_mr * Zeus::RDMA::Hoard::getRdmaMr(void *ptr, ibv_pd *pd) {
   return getCustomHeap()->getRdmaMr(ptr, pd);
+}*/
+
+struct NetworkDirect::ndspi_mr * win::RDMA::Hoard::getRdmaMr(void *ptr) {
+	return getCustomHeap()->getRdmaMr(ptr, 0);
 }
+
+#pragma warning(pop)

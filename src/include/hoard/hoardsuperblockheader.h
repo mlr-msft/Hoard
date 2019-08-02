@@ -38,7 +38,10 @@
 
 #include "heaplayers.h"
 
-#include <rdma/rdma_verbs.h>
+//PIALIC: comment out iverb
+#include "ndspi.h"
+#include <ndtestutil.h>
+//#include <rdma/rdma_verbs.h>
 
 #include <cstdlib>
 
@@ -98,7 +101,10 @@ namespace Hoard {
       clear();
       if (_rdmaMr != nullptr)
       {
-        ibv_dereg_mr(_rdmaMr);
+	  
+	    //PIALIC: 
+        //ibv_dereg_mr(_rdmaMr);
+		//HRESULT hr = NdTestBase::RegisterDataBuffer();
       }
     }
 
@@ -217,17 +223,22 @@ namespace Hoard {
       _theLock.unlock();
     }
 
-    inline ibv_mr * getRdmaMr(struct ibv_pd *pd)
+//PIALIC:
+    //inline ibv_mr * getRdmaMr(struct ibv_pd *pd)
+	inline struct NetworkDirect::ndspi_mr * getRdmaMr()
     {
       assert (isValid());
       if (_rdmaMr == nullptr)
       {
-        assert(pd != nullptr);
+        //assert(pd != nullptr);
         //fprintf(stderr, "Registering RDMA buffer on demand...\n");
-        _rdmaMr = ibv_reg_mr(pd,
+		
+        /*_rdmaMr = ibv_reg_mr(pd,
             (void *)_start,
             _totalObjects * _objectSize,
             IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_WRITE);
+			*/
+		// NdTestBase::RegisterDataBuffer(buffer, (DWORD)buffer.count(), ND_MR_FLAG_ALLOW_LOCAL_WRITE | ND_MR_FLAG_ALLOW_REMOTE_WRITE);
         //fprintf(stderr, "Registered.\n");
       }
 
@@ -301,8 +312,12 @@ namespace Hoard {
 
     /// The cursor into the buffer following the header.
     char * _position;
+	
+	//PIALIC:
+	
 
-    struct ibv_mr *_rdmaMr;
+    //struct ibv_mr *_rdmaMr;
+	struct NetworkDirect::ndspi_mr *_rdmaMr;
 
     /// The list of freed objects.
     FreeSLList _freeList;

@@ -28,7 +28,10 @@
 #ifndef HOARD_RELEASEHEAP_H
 #define HOARD_RELEASEHEAP_H
 
+#pragma once
+
 #if defined(_WIN32)
+#define _WINSOCKAPI_ 
 #include <windows.h>
 #else
 // Assume UNIX

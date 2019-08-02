@@ -1,4 +1,4 @@
-//#include "geometricsizeclass.h"
+#include "geometricsizeclass.h"
 
 #include <stdint.h>
 

@@ -28,20 +28,25 @@
  *
  **********************************************************************/
 
-#ifndef ZEUS_RDMA_H
-#define ZEUS_RDMA_H
+#ifndef WIN_RDMA_H
+#define WIN_RDMA_H
 
-#include <rdma/rdma_verbs.h>
+//PIALIC
+//#include <rdma/rdma_verbs.h>
+#include "ndspi.h"
+#include "ndutil.h"
+//#include <ndtestutil.h>
 
-namespace Zeus
+namespace win
 {
   namespace RDMA
   {
     namespace Hoard
-    {
-      struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd);
+    {		
+      //struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd);
+	  struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr);
     }
   }
 } // namespace Hoard
 
-#endif /* ZEUS_RDMA_H */
+#endif /* WIN_RDMA_H */

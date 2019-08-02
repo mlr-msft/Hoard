@@ -150,7 +150,20 @@ namespace Hoard {
       }
     }
 
-    inline struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd) {
+	//PIALIC
+	inline struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr, void *pother) {
+      auto *s = getSuperblock(ptr);
+
+      if (s->isValidSuperblock())
+      {
+        return s->getRdmaMr();
+      }
+      else
+      {
+        return nullptr;// illegal pointer
+      }
+    }
+    /*inline struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd) {
       auto *s = getSuperblock(ptr);
 
       if (s->isValidSuperblock())
@@ -161,7 +174,7 @@ namespace Hoard {
       {
         return nullptr;// illegal pointer
       }
-    }
+    }*/
 
     static inline SuperblockType * getSuperblock (void * ptr) {
       return SuperblockType::getSuperblock (ptr);
