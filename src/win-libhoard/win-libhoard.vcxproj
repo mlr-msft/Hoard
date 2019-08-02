@@ -75,14 +75,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil;$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil\include;$(ProjectDir)..\..\src\include\superblocks;$(ProjectDir)..\..\src\include\util;$(ProjectDir)..\..\src\include;$(ProjectDir)..\..\src\include\hoard;$(ProjectDir)..\..\src\Heap-Layers\utility;$(ProjectDir)..\..\src\Heap-Layers;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\Heap-Layers;$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil;$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil\include;$(ProjectDir)..\..\src\include\superblocks;$(ProjectDir)..\..\src\include\util;$(ProjectDir)..\..\src\include;$(ProjectDir)..\..\src\include\hoard;$(ProjectDir)..\..\src\Heap-Layers\utility;$(ProjectDir)..\..\src\Heap-Layers;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil;$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil\include;$(UniversalCRT_IncludePath);$(ProjectDir)..\..\src\include\superblocks;$(ProjectDir)..\..\src\include\util;$(ProjectDir)..\..\src\include;$(ProjectDir)..\..\src\include\hoard;$(ProjectDir)..\..\src\Heap-Layers\utility;$(ProjectDir)..\..\src\Heap-Layers;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\Heap-Layers;$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil;$(ProjectDir)..\..\..\NetworkDirect\src\demeter-win\libraries\ndutil\include;$(UniversalCRT_IncludePath);$(ProjectDir)..\..\src\include\superblocks;$(ProjectDir)..\..\src\include\util;$(ProjectDir)..\..\src\include;$(ProjectDir)..\..\src\include\hoard;$(ProjectDir)..\..\src\Heap-Layers\utility;$(ProjectDir)..\..\src\Heap-Layers;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -199,7 +199,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Heap-Layers\wrappers\winwrapper.cpp" />
+    <ClCompile Include="..\..\..\Heap-Layers\wrappers\winwrapper.cpp" />
     <ClCompile Include="..\source\libhoard.cpp" />
     <ClCompile Include="..\source\wintls.cpp" />
     <ClCompile Include="stdafx.cpp">
