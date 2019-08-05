@@ -107,6 +107,7 @@
       <PreprocessorDefinitions>_DEBUG;WINLIBHOARD_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>4267;4290;4307;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\dmtr-win\src\c++\libos\ndspi\dmtr-win-ndutil;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -146,6 +147,7 @@
       <ConformanceMode>true</ConformanceMode>
       <CompileAsWinRT>false</CompileAsWinRT>
       <DisableSpecificWarnings>4267;4290;4307;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\dmtr-win\src\c++\libos\ndspi\dmtr-win-ndutil;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -211,7 +213,7 @@
     <ClCompile Include="win-libhoard.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\NetworkDirect\src\demeter-win\vs\ndutil\ndutil.vcxproj">
+    <ProjectReference Include="..\..\..\dmtr-win\src\c++\libos\ndspi\dmtr-win-ndutil\dmtr-win-ndutil.vcxproj">
       <Project>{8c7c0240-27c3-4a36-afbc-a553dd3fd42b}</Project>
     </ProjectReference>
   </ItemGroup>

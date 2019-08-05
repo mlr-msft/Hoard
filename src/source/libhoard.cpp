@@ -180,7 +180,7 @@ struct ibv_mr * Zeus::RDMA::Hoard::getRdmaMr(void *ptr, ibv_pd *pd) {
   return getCustomHeap()->getRdmaMr(ptr, pd);
 }*/
 
-struct NetworkDirect::ndspi_mr * win::RDMA::Hoard::getRdmaMr(void *ptr) {
+__declspec(dllexport) struct NetworkDirect::ndspi_mr * win::RDMA::Hoard::getRdmaMr(void *ptr) {
 	return getCustomHeap()->getRdmaMr(ptr, 0);
 }
 

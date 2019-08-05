@@ -33,8 +33,8 @@
 
 //PIALIC
 //#include <rdma/rdma_verbs.h>
-#include "ndspi.h"
-#include "ndutil.h"
+#include <ndspi.h>
+#include <ndutil.h>
 //#include <ndtestutil.h>
 
 namespace win
@@ -44,7 +44,7 @@ namespace win
     namespace Hoard
     {		
       //struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd);
-	  struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr);
+	  __declspec(dllexport) struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr);
     }
   }
 } // namespace Hoard
