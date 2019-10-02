@@ -184,10 +184,10 @@ namespace Hoard {
 
 	//PIALIC:
     //inline ibv_mr * getRdmaMr(ibv_pd *pd)
-	inline struct NetworkDirect::ndspi_mr * getRdmaMr()
+	inline void* getRdmaMr(void* arg)
     {
       assert (_header.isValid());
-      return _header.getRdmaMr();
+      return _header.getRdmaMr(arg);
     }
 
   private:

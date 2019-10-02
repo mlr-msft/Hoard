@@ -151,12 +151,13 @@ namespace Hoard {
     }
 
 	//PIALIC
-	inline struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr, void *pother) {
+	//inline struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr, void *pother) {
+    inline void* getRdmaMr(void *ptr, void *pother) {
       auto *s = getSuperblock(ptr);
 
       if (s->isValidSuperblock())
       {
-        return s->getRdmaMr();
+        return s->getRdmaMr(ptr);
       }
       else
       {
