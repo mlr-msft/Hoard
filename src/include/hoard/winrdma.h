@@ -12,7 +12,7 @@
  * restriction, including without limitation the rights to use, copy,
  * modify, merge, publish, distribute, sublicense, and/or sell copies
  * of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * furnished to do so, subject to the following conditions: 
  *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
@@ -33,20 +33,10 @@
 
 //PIALIC
 //#include <rdma/rdma_verbs.h>
-#include <ndspi.h>
+//#include <ndspi.h>
 //#include <ndutil.h>
 //#include <ndtestutil.h>
 
-namespace win
-{
-  namespace RDMA
-  {
-    namespace Hoard
-    {		
-      //struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd);
-	  __declspec(dllexport) void* getRdmaMr(void *ptr);
-    }
-  }
-} // namespace Hoard
+extern "C" __declspec(dllexport) void getRdmaMr(void* base, size_t size, void(*register_callback)(void* base, size_t size));
 
 #endif /* WIN_RDMA_H */

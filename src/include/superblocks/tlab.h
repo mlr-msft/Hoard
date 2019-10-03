@@ -152,16 +152,12 @@ namespace Hoard {
 
 	//PIALIC
 	//inline struct NetworkDirect::ndspi_mr * getRdmaMr(void *ptr, void *pother) {
-    inline void* getRdmaMr(void *ptr, void *pother) {
+    inline void getRdmaMr(void* ptr, size_t size, void(*register_callback)(void* base, size_t size)) {
       auto *s = getSuperblock(ptr);
 
       if (s->isValidSuperblock())
       {
-        return s->getRdmaMr(ptr);
-      }
-      else
-      {
-        return nullptr;// illegal pointer
+         s->getRdmaMr(ptr, size, register_callback);
       }
     }
     /*inline struct ibv_mr * getRdmaMr(void *ptr, ibv_pd *pd) {
@@ -177,8 +173,8 @@ namespace Hoard {
       }
     }*/
 
-    static inline SuperblockType * getSuperblock (void * ptr) {
-      return SuperblockType::getSuperblock (ptr);
+    static inline SuperblockType * getSuperblock (void* ptr) {
+      return SuperblockType::getSuperblock(ptr);
     }
 
   private:

@@ -40,8 +40,8 @@
 #include "heaplayers.h"
 
 //PIALIC: comment out iverb
-#include "ndspi.h"
-#include <ndtestutil.h>
+//#include "ndspi.h"
+//#include <ndtestutil.h>
 //#include <rdma/rdma_verbs.h>
 
 #include <cstdlib>
@@ -92,7 +92,7 @@ namespace Hoard {
 	_objectsFree (_totalObjects),
 	_start (start),
 	_position (start),
-	_rdmaMr (nullptr)
+	_isRegisteredMr(false)
     {
       assert ((HL::align<Alignment>((size_t) start) == (size_t) start));
       assert (_objectSize >= Alignment);
@@ -101,7 +101,7 @@ namespace Hoard {
 
     virtual ~HoardSuperblockHeaderHelper() {
       clear();
-      if (_rdmaMr != nullptr)
+      if (_isRegisteredMr)
       {
 	  
 	    //PIALIC: 
@@ -225,42 +225,16 @@ namespace Hoard {
       _theLock.unlock();
     }
 
-	inline void* getRdmaMr(void* pMR)
+	inline void getRdmaMr(void* ptr, size_t size, void (*register_callback)(void*, size_t))
     {
       assert (isValid());
-      if (_rdmaMr == nullptr)
+      if (!_isRegisteredMr)
       {
-        fprintf(stderr, "getRdmaMr(%p)\n", pMR);
-        assert(pMR);
-        fprintf(stderr, "Registering RDMA buffer on demand...\n");
-        IND2MemoryRegion* pMemoryRegion = (IND2MemoryRegion*)pMR;
-        fprintf(stderr, "pMemoryRegion: %p\n", pMemoryRegion);
-        assert(pMemoryRegion);
-        OVERLAPPED ov{ 0 };
-        fprintf(stderr, 
-            "_start: %p, _totalObjects: %u, _objectSize: %zu, totalSize: %zu\n",
-            _start,
-            _totalObjects,
-            _objectSize,
-            _totalObjects * _objectSize
-        );
-        HRESULT hr = 
-            pMemoryRegion->Register(
-                (void*)_start,
-                _totalObjects * _objectSize,
-                ND_MR_FLAG_ALLOW_LOCAL_WRITE | ND_MR_FLAG_ALLOW_REMOTE_WRITE, 
-                &ov
-            );
-        fprintf(stderr, "IND2MemoryRegion::Register -> %08X\n", hr);
-        assert(hr == ND_SUCCESS);
-        hr = pMemoryRegion->GetOverlappedResult(&ov, TRUE);
-        assert(hr == ND_SUCCESS);
-        _rdmaMr = pMR;
-        fprintf(stderr, "Registered.\n");
+          (*register_callback)((void*)_start, _totalObjects * _objectSize);
+          _isRegisteredMr = true;
       }
 
-      assert(_rdmaMr != nullptr);
-      return _rdmaMr;
+      assert(_isRegisteredMr);
     }
 
   private:
@@ -334,7 +308,8 @@ namespace Hoard {
 	
 
     //struct ibv_mr *_rdmaMr;
-	void* _rdmaMr;
+	//void* _rdmaMr;
+    bool _isRegisteredMr;
 
     /// The list of freed objects.
     FreeSLList _freeList;

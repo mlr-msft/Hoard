@@ -45,8 +45,8 @@
 
 //PIALIC
 // #include <rdma/rdma_verbs.h>
-#include "ndspi.h"
-#include <ndtestutil.h>
+//#include "ndspi.h"
+//#include <ndtestutil.h>
 
 using namespace HL;
 
@@ -201,13 +201,13 @@ namespace Hoard {
     }
 
 //PIALIC: changing ibv_pd to void*
-    INLINE struct ndspi_mr* getRdmaMr(void *ptr, void *pd)
+    INLINE struct ndspi_mr* getRdmaMr(void* ptr, size_t size, void(*register_callback)(void* base, size_t size))
     {
         SuperblockType *s = SuperHeap::getSuperblock(ptr);
         assert (s->getOwner() == this);
 		//PIALIC
         //return s->getRdmaMr(pd);
-		return s->getRdmaMr();
+		return s->getRdmaMr(ptr, size, register_callback);
     }
 
   private:

@@ -183,8 +183,9 @@ struct ibv_mr * Zeus::RDMA::Hoard::getRdmaMr(void *ptr, ibv_pd *pd) {
 //__declspec(dllexport) struct NetworkDirect::ndspi_mr * win::RDMA::Hoard::getRdmaMr(void *ptr) {
 //	return getCustomHeap()->getRdmaMr(ptr, 0);
 //}
-__declspec(dllexport) void* win::RDMA::Hoard::getRdmaMr(void *ptr) {
-    return getCustomHeap()->getRdmaMr(ptr, 0);
+extern "C" __declspec(dllexport) void getRdmaMr(void* base, size_t size, void(*register_callback)(void* base, size_t size)) 
+{
+    return getCustomHeap()->getRdmaMr(base, size, register_callback);
 }
 
 #pragma warning(pop)

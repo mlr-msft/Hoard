@@ -212,11 +212,6 @@
     </ClCompile>
     <ClCompile Include="win-libhoard.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\dmtr-win\src\c++\libos\ndspi\dmtr-win-ndutil\dmtr-win-ndutil.vcxproj">
-      <Project>{8c7c0240-27c3-4a36-afbc-a553dd3fd42b}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

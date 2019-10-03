@@ -184,10 +184,10 @@ namespace Hoard {
 
 	//PIALIC:
     //inline ibv_mr * getRdmaMr(ibv_pd *pd)
-	inline void* getRdmaMr(void* arg)
+	inline void getRdmaMr(void* ptr, size_t size, void(*register_callback)(void* base, size_t size))
     {
       assert (_header.isValid());
-      return _header.getRdmaMr(arg);
+      _header.getRdmaMr(ptr, size, register_callback);
     }
 
   private:
