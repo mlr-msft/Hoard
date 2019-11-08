@@ -92,7 +92,8 @@ namespace Hoard {
 	_objectsFree (_totalObjects),
 	_start (start),
 	_position (start),
-	_isRegisteredMr(false)
+    _memory_region(nullptr),
+    _destroy_memory_region(nullptr)
     {
       assert ((HL::align<Alignment>((size_t) start) == (size_t) start));
       assert (_objectSize >= Alignment);
@@ -101,12 +102,11 @@ namespace Hoard {
 
     virtual ~HoardSuperblockHeaderHelper() {
       clear();
-      if (_isRegisteredMr)
+      if (_memory_region && _destroy_memory_region)
       {
-	  
-	    //PIALIC: 
-        //ibv_dereg_mr(_rdmaMr);
-		//HRESULT hr = NdTestBase::RegisterDataBuffer();
+          (*_destroy_memory_region)(_memory_region);
+          _memory_region = 0;
+          _destroy_memory_region = 0;
       }
     }
 
@@ -228,13 +228,37 @@ namespace Hoard {
 	inline void getRdmaMr(void* ptr, size_t size, void (*register_callback)(void*, size_t))
     {
       assert (isValid());
-      if (!_isRegisteredMr)
-      {
-          (*register_callback)((void*)_start, _totalObjects * _objectSize);
-          _isRegisteredMr = true;
-      }
+      //if (!_isRegisteredMr)
+      //{
+      //    (*register_callback)((void*)_start, _totalObjects * _objectSize);
+      //    _isRegisteredMr = true;
+      //}
 
-      assert(_isRegisteredMr);
+      //assert(_isRegisteredMr);
+    }
+
+    /**
+        Create a memory region
+        Register the memory if necessary
+        Return a pointer to the memory region
+    **/
+    inline void* get_memory_region(
+        void* ptr, // pointer to subblock (not used)
+        size_t size, // size of subblock (not used)
+        void* (*create_memory_region)(void* block_start, size_t block_size),
+        void(*destroy_memory_region)(void* memory_region)
+    )
+    {
+        fprintf(stderr, "%s(%p, %zu, %p, %p)\n", __FUNCTION__, ptr, size, create_memory_region, destroy_memory_region);
+        if (!_memory_region)
+        {
+            if (_destroy_memory_region)
+                fprintf(stderr, "_destroy_memory_region is already set to %p\n", _destroy_memory_region);
+            _memory_region = (*create_memory_region)((void*)_start, _totalObjects * _objectSize);
+            _destroy_memory_region = destroy_memory_region;
+        }
+        printf("%s -> %p\n", __FUNCTION__, _memory_region);
+        return _memory_region;
     }
 
   private:
@@ -309,7 +333,8 @@ namespace Hoard {
 
     //struct ibv_mr *_rdmaMr;
 	//void* _rdmaMr;
-    bool _isRegisteredMr;
+    void* _memory_region;
+    void(*_destroy_memory_region)(void* memory_region);
 
     /// The list of freed objects.
     FreeSLList _freeList;

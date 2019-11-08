@@ -190,6 +190,17 @@ namespace Hoard {
       _header.getRdmaMr(ptr, size, register_callback);
     }
 
+    inline void* get_memory_region(
+        void* ptr, 
+        size_t size,
+        void* (*create_memory_region)(void* block_start, size_t block_size),
+        void (*destroy_memory_region)(void* memory_region)
+        )
+    {
+        assert(_header.isValid());
+        return _header.get_memory_region(ptr, size, create_memory_region, destroy_memory_region);
+    }
+
   private:
 
 

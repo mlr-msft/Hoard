@@ -37,6 +37,11 @@
 //#include <ndutil.h>
 //#include <ndtestutil.h>
 
-extern "C" __declspec(dllexport) void getRdmaMr(void* base, size_t size, void(*register_callback)(void* base, size_t size));
+//extern "C" __declspec(dllexport) void getRdmaMr(void* base, size_t size, void(*register_callback)(void* base, size_t size));
+extern "C" __declspec(dllexport) void* get_memory_region(
+    void* ptr, size_t size,
+    void* (*create_memory_region)(void* block_start, size_t block_size),
+    void(*destroy_memory_region)(void* memory_region)
+);
 
 #endif /* WIN_RDMA_H */

@@ -188,4 +188,13 @@ extern "C" __declspec(dllexport) void getRdmaMr(void* base, size_t size, void(*r
     return getCustomHeap()->getRdmaMr(base, size, register_callback);
 }
 
+extern "C" __declspec(dllexport) void* get_memory_region(
+    void* ptr, size_t size,
+    void* (*create_memory_region)(void* block_start, size_t block_size),
+    void(*destroy_memory_region)(void* memory_region)
+)
+{
+    return getCustomHeap()->get_memory_region(ptr, size, create_memory_region, destroy_memory_region);
+}
+
 #pragma warning(pop)

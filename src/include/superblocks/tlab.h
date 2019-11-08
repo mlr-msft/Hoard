@@ -173,6 +173,25 @@ namespace Hoard {
       }
     }*/
 
+    inline void* get_memory_region(
+        void* ptr,
+        size_t size,
+        void* (*create_memory_region)(void* block_start, size_t block_size),
+        void(*destroy_memory_region)(void* memory_region)
+    )
+    {
+        auto *s = getSuperblock(ptr);
+
+        if (s->isValidSuperblock())
+        {
+            return s->get_memory_region(ptr, size, create_memory_region, destroy_memory_region);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
     static inline SuperblockType * getSuperblock (void* ptr) {
       return SuperblockType::getSuperblock(ptr);
     }
