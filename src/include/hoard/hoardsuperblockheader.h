@@ -257,7 +257,7 @@ namespace Hoard {
             _memory_region = (*create_memory_region)((void*)_start, _totalObjects * _objectSize);
             _destroy_memory_region = destroy_memory_region;
         }
-        printf("%s -> %p\n", __FUNCTION__, _memory_region);
+        fprintf(stderr, "%s -> %p\n", __FUNCTION__, _memory_region);
         return _memory_region;
     }
 
